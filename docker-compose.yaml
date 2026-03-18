@@ -1,0 +1,47 @@
+version: "3.7"
+services:
+  company-microservice:
+    container_name: company_microservice
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    volumes:
+      - ./:/dockerdev
+    networks:
+      - demo-network
+
+  db:
+    container_name: db
+    image: mysql:8.0.29
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: "db"
+      MYSQL_USER: "demo"
+      MYSQL_PASSWORD: "demo"
+      MYSQL_ROOT_PASSWORD: "demo"
+    ports:
+      - "3306:3306"
+      - "33060:33060"
+    networks:
+      - demo-network
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+
+  adminer:
+    image: adminer:4.8.1
+    container_name: adminer
+    restart: unless-stopped
+    links:
+      - db
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    ports:
+      - "8888:8080"
+    networks:
+      - demo-network
+networks:
+  demo-network:
+    driver: bridge
